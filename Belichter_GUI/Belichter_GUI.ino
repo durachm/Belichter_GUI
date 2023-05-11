@@ -21,6 +21,8 @@ Adafruit_STMPE610 ts = Adafruit_STMPE610(STMPE_CS);
 #define TFT_DC 9
 Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 
+int backlight = 3;
+int brightness = 255;
 int time_0 = 10;
 int time_1 = 50;
 int time_2 = 400;
@@ -33,6 +35,8 @@ bool start_2 = 0;
 
 unsigned long start_time = 0;
 
+unsigned long lastMillis = 0;
+
 class Button {
 public:
   int _x = 0;
@@ -44,21 +48,36 @@ public:
 
   void drawButton(const char* text) {
     tft.fillRect(_x, _y, 100, 50, ILI9341_BLACK);
-    tft.drawRect(_x, _y, 100, 50, ILI9341_DARKGREY);
+    tft.drawRect(_x, _y, 100, 50, ILI9341_RED);
     tft.setCursor(_x + 20, _y + 15);
     tft.setTextSize(2);
-    tft.setTextColor(ILI9341_WHITE);
+    tft.setTextColor(ILI9341_RED);
     tft.println(text);
     // writeText(100,200, "hallo");
   }
   void drawButton(int text) {
     tft.fillRect(_x, _y, 100, 50, ILI9341_BLACK);
-    tft.drawRect(_x, _y, 100, 50, ILI9341_DARKGREY);
+    tft.drawRect(_x, _y, 100, 50, ILI9341_RED);
     tft.setCursor(_x + 30, _y + 15);
     tft.setTextSize(2);
-    tft.setTextColor(ILI9341_WHITE);
+    tft.setTextColor(ILI9341_RED);
     tft.println(text);
     // writeText(100,200, "hallo");
+  }
+  void drawSun() {
+    tft.fillRect(_x, _y, 100, 50, ILI9341_BLACK);
+    tft.drawRect(_x, _y, 100, 50, ILI9341_RED);
+    tft.drawCircle(_x + 50, _y + 25, 4, ILI9341_RED);
+
+    tft.drawFastHLine(_x + 58, _y + 25, 8, ILI9341_RED);
+    tft.drawFastHLine(_x + 35, _y + 25, 8, ILI9341_RED);
+    tft.drawFastVLine(_x + 50, _y + 33, 8, ILI9341_RED);
+    tft.drawFastVLine(_x + 50, _y + 10, 8, ILI9341_RED);
+
+    tft.drawLine(_x + 56, _y + 31, _x + 61, _y + 36, ILI9341_RED);
+    tft.drawLine(_x + 56, _y + 19, _x + 61, _y + 14, ILI9341_RED);
+    tft.drawLine(_x + 44, _y + 31, _x + 39, _y + 36, ILI9341_RED);
+    tft.drawLine(_x + 44, _y + 19, _x + 39, _y + 14, ILI9341_RED);
   }
   bool justPressed(int px, int py) {
     //tft.drawLine(_x, _y, _x+100, _y+50, ILI9341_DARKCYAN);
@@ -73,7 +92,7 @@ public:
 
     for (int x = 0; x < 3; x++) {
       for (int y = 0; y < 4; y++) {
-        tft.drawRect(x * 70 + 10 * x + 5, y * 50 + 10 * y + 85, 70, 50, ILI9341_DARKGREY);
+        tft.drawRect(x * 70 + 10 * x + 5, y * 50 + 10 * y + 85, 70, 50, ILI9341_RED);
       }
     }
     int number = 1;
@@ -86,18 +105,20 @@ public:
       }
       tft.setCursor(115, 280);
       tft.println(0);
-      tft.drawFastHLine(185, 290, 30, ILI9341_WHITE);
-      tft.drawFastVLine(215, 280, 10, ILI9341_WHITE);
-      tft.drawLine(185, 290, 190, 295, ILI9341_WHITE);
-      tft.drawLine(185, 290, 190, 285, ILI9341_WHITE);
+      tft.drawFastHLine(185, 290, 30, ILI9341_RED);
+      tft.drawFastVLine(215, 280, 10, ILI9341_RED);
+      tft.drawLine(185, 290, 190, 295, ILI9341_RED);
+      tft.drawLine(185, 290, 190, 285, ILI9341_RED);
 
-      tft.drawFastHLine(25, 290, 30, ILI9341_WHITE);
-      tft.drawLine(25, 290, 30, 295, ILI9341_WHITE);
-      tft.drawLine(25, 290, 30, 285, ILI9341_WHITE);
+      tft.drawFastHLine(25, 290, 30, ILI9341_RED);
+      tft.drawLine(25, 290, 30, 295, ILI9341_RED);
+      tft.drawLine(25, 290, 30, 285, ILI9341_RED);
     }
 
     int result = 0;
     int last_result = 0;
+
+
 
     while (1) {
 
@@ -143,6 +164,63 @@ public:
       }
     }
   }
+
+  void brightnessControl(void) {
+    tft.fillScreen(ILI9341_BLACK);
+    tft.drawFastHLine(20, 280, 200, ILI9341_RED);
+    tft.drawFastVLine(20, 265, 30, ILI9341_RED);
+    tft.drawFastVLine(220, 265, 30, ILI9341_RED);
+
+    tft.drawRect(5, 5, 230, 150, ILI9341_RED);
+    //tft.fillRect(10, 70, 220, 80, ILI9341_RED);
+    tft.setCursor(35, 35);
+    tft.setTextSize(2);
+    tft.println("Set brightness");
+
+    while (1) {
+      if (ts.touched()) {
+
+
+        TS_Point p = ts.getPoint();
+        // Scale using the calibration #'s
+        // and rotate coordinate system
+        int px = map(p.x, TS_MINY, TS_MAXY, 0, tft.width());
+        int py = map(p.y, TS_MINX, TS_MAXX, 0, tft.height());
+
+        if ((px > 5) && (px < (5 + 230)) && (py > 5) && (py < (5 + 150))) {
+          tft.fillScreen(ILI9341_BLACK);
+          delay(400);
+          break;
+        }
+
+        if (px > 0 && (px < (240)) && (py > 240) && (py < 315)) {
+          if (px < 20)
+            px = 20;
+          if (px > 220)
+            px = 220;
+          if (px <= 140)
+            brightness = map(px, 20, 140, 1, 15);
+          else
+            brightness = map(px, 140, 220, 16, 255);
+          analogWrite(backlight, brightness);  // Set brightness
+
+          tft.fillRect(10, 70, 220, 80, ILI9341_BLACK);
+          tft.setCursor(110, 80);
+          tft.setTextSize(2);
+          tft.println(brightness);
+          // tft.setCursor(110, 100);
+          // tft.println(px);
+        }
+      }
+    }
+    while (1) {
+      if (!ts.touched()) {
+        TS_Point p = ts.getPoint();
+        delay(200);
+        return;
+      }
+    }
+  }
 };
 
 
@@ -153,7 +231,7 @@ void setup(void) {
   tft.begin();
   ts.begin();
 
-
+  pinMode(backlight, OUTPUT);  // sets the pin as output
   tft.fillScreen(ILI9341_BLACK);
   // origin = left,top landscape (USB left upper)
   // tft.setRotation(0);
@@ -176,11 +254,12 @@ void loop() {
   Time2.drawButton(time_2);
   Start2.drawButton("Start");
   OnOff.drawButton("On");
-  Darkmode.drawButton("Dark");
+  Darkmode.drawSun();
 
   bool refresh = 0;
   int time_counter = 0;
-
+  analogWrite(backlight, brightness);  // Set brightness
+  //analogWrite(backlight, 0);  // Set brightness
   while (1) {  // Gui
 
     if (!ts.touched()) {
@@ -216,7 +295,7 @@ void loop() {
       }
 
       else if (Darkmode.justPressed(x, y)) {
-        dark_on = !dark_on;
+        Darkmode.brightnessControl();
         refresh = 1;
       } else if (OnOff.justPressed(x, y)) {
         relais_on = !relais_on;
@@ -228,17 +307,14 @@ void loop() {
         Time0.drawButton(time_0);
         Time1.drawButton(time_1);
         Time2.drawButton(time_2);
+        Darkmode.drawSun();
         if (relais_on) {
           OnOff.drawButton("Off");
           tft.fillRect(5, 280, 230, 35, ILI9341_RED);
         } else {
           OnOff.drawButton("On");
         }
-        if (dark_on) {
-          Darkmode.drawButton("Light");
-        } else {
-          Darkmode.drawButton("Dark");
-        }
+
         if (start_0) {
           Start0.drawButton("Stop");
           tft.fillRect(5, 280, 230, 35, ILI9341_RED);
@@ -269,14 +345,24 @@ void loop() {
         time_counter = time_1;
       if (start_2)
         time_counter = time_2;
-
+      
       if (!relais_on) {
 
         int width = map((millis() - start_time) / 1000, 0, time_counter, 0, 230);
 
         tft.fillRect(235 - width, 280, width, 35, ILI9341_BLACK);
 
-        if (time_counter < (millis() - start_time) / 1000) {
+        if (millis() - lastMillis >= 1000) {	
+            lastMillis = millis() ; 
+          if (start_0)
+            Time0.drawButton((millis() - start_time) / 1000);
+          if (start_1)
+            Time1.drawButton((millis() - start_time) / 1000);
+          if (start_2)
+            Time2.drawButton((millis() - start_time) / 1000);
+        }
+
+        if (time_counter <= (millis() - start_time) / 1000) {
           start_0 = 0;
           start_1 = 0;
           start_2 = 0;
@@ -285,7 +371,7 @@ void loop() {
         }
       }
     }
-    if (!start_0 && !start_1 && !start_2 && !relais_on) {
+    if (!start_0 && !start_1 && !start_2 && !relais_on) {  //clear bar
       tft.fillRect(5, 280, 230, 35, ILI9341_BLACK);
     }
   }
