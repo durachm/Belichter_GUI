@@ -23,11 +23,14 @@ Adafruit_ILI9341 tft = Adafruit_ILI9341(TFT_CS, TFT_DC);
 
 int backlight = 3;
 int brightness = 255;
-int time_0 = 10;
-int time_1 = 50;
-int time_2 = 400;
+int time_0 = 5;
+int time_1 = 30;
+int time_2 = 60;
 bool relais_on = 0;
 bool dark_on = 0;
+
+
+int relais_pin = 13;
 
 bool start_0 = 0;
 bool start_1 = 0;
@@ -36,6 +39,10 @@ bool start_2 = 0;
 unsigned long start_time = 0;
 
 unsigned long lastMillis = 0;
+
+uint16_t background_colour = 0x0000;  ///<   0,   0,   0
+uint16_t foreground_colour = 0xF800;  ///< 255,   0,   0
+
 
 class Button {
 public:
@@ -47,37 +54,37 @@ public:
   }
 
   void drawButton(const char* text) {
-    tft.fillRect(_x, _y, 100, 50, ILI9341_BLACK);
-    tft.drawRect(_x, _y, 100, 50, ILI9341_RED);
+    tft.fillRect(_x, _y, 100, 50, background_colour);
+    tft.drawRect(_x, _y, 100, 50, foreground_colour);
     tft.setCursor(_x + 20, _y + 15);
     tft.setTextSize(2);
-    tft.setTextColor(ILI9341_RED);
+    tft.setTextColor(foreground_colour);
     tft.println(text);
     // writeText(100,200, "hallo");
   }
   void drawButton(int text) {
-    tft.fillRect(_x, _y, 100, 50, ILI9341_BLACK);
-    tft.drawRect(_x, _y, 100, 50, ILI9341_RED);
+    tft.fillRect(_x, _y, 100, 50, background_colour);
+    tft.drawRect(_x, _y, 100, 50, foreground_colour);
     tft.setCursor(_x + 30, _y + 15);
     tft.setTextSize(2);
-    tft.setTextColor(ILI9341_RED);
+    tft.setTextColor(foreground_colour);
     tft.println(text);
     // writeText(100,200, "hallo");
   }
   void drawSun() {
-    tft.fillRect(_x, _y, 100, 50, ILI9341_BLACK);
-    tft.drawRect(_x, _y, 100, 50, ILI9341_RED);
-    tft.drawCircle(_x + 50, _y + 25, 4, ILI9341_RED);
+    tft.fillRect(_x, _y, 100, 50, background_colour);
+    tft.drawRect(_x, _y, 100, 50, foreground_colour);
+    tft.drawCircle(_x + 50, _y + 25, 4, foreground_colour);
 
-    tft.drawFastHLine(_x + 58, _y + 25, 8, ILI9341_RED);
-    tft.drawFastHLine(_x + 35, _y + 25, 8, ILI9341_RED);
-    tft.drawFastVLine(_x + 50, _y + 33, 8, ILI9341_RED);
-    tft.drawFastVLine(_x + 50, _y + 10, 8, ILI9341_RED);
+    tft.drawFastHLine(_x + 58, _y + 25, 8, foreground_colour);
+    tft.drawFastHLine(_x + 35, _y + 25, 8, foreground_colour);
+    tft.drawFastVLine(_x + 50, _y + 33, 8, foreground_colour);
+    tft.drawFastVLine(_x + 50, _y + 10, 8, foreground_colour);
 
-    tft.drawLine(_x + 56, _y + 31, _x + 61, _y + 36, ILI9341_RED);
-    tft.drawLine(_x + 56, _y + 19, _x + 61, _y + 14, ILI9341_RED);
-    tft.drawLine(_x + 44, _y + 31, _x + 39, _y + 36, ILI9341_RED);
-    tft.drawLine(_x + 44, _y + 19, _x + 39, _y + 14, ILI9341_RED);
+    tft.drawLine(_x + 56, _y + 31, _x + 61, _y + 36, foreground_colour);
+    tft.drawLine(_x + 56, _y + 19, _x + 61, _y + 14, foreground_colour);
+    tft.drawLine(_x + 44, _y + 31, _x + 39, _y + 36, foreground_colour);
+    tft.drawLine(_x + 44, _y + 19, _x + 39, _y + 14, foreground_colour);
   }
   bool justPressed(int px, int py) {
     //tft.drawLine(_x, _y, _x+100, _y+50, ILI9341_DARKCYAN);
@@ -88,11 +95,11 @@ public:
     }
   }
   int numberfield(void) {
-    tft.fillScreen(ILI9341_BLACK);
+    tft.fillScreen(background_colour);
 
     for (int x = 0; x < 3; x++) {
       for (int y = 0; y < 4; y++) {
-        tft.drawRect(x * 70 + 10 * x + 5, y * 50 + 10 * y + 85, 70, 50, ILI9341_RED);
+        tft.drawRect(x * 70 + 10 * x + 5, y * 50 + 10 * y + 85, 70, 50, foreground_colour);
       }
     }
     int number = 1;
@@ -105,14 +112,14 @@ public:
       }
       tft.setCursor(115, 280);
       tft.println(0);
-      tft.drawFastHLine(185, 290, 30, ILI9341_RED);
-      tft.drawFastVLine(215, 280, 10, ILI9341_RED);
-      tft.drawLine(185, 290, 190, 295, ILI9341_RED);
-      tft.drawLine(185, 290, 190, 285, ILI9341_RED);
+      tft.drawFastHLine(185, 290, 30, foreground_colour);
+      tft.drawFastVLine(215, 280, 10, foreground_colour);
+      tft.drawLine(185, 290, 190, 295, foreground_colour);
+      tft.drawLine(185, 290, 190, 285, foreground_colour);
 
-      tft.drawFastHLine(25, 290, 30, ILI9341_RED);
-      tft.drawLine(25, 290, 30, 295, ILI9341_RED);
-      tft.drawLine(25, 290, 30, 285, ILI9341_RED);
+      tft.drawFastHLine(25, 290, 30, foreground_colour);
+      tft.drawLine(25, 290, 30, 295, foreground_colour);
+      tft.drawLine(25, 290, 30, 285, foreground_colour);
     }
 
     int result = 0;
@@ -149,13 +156,13 @@ public:
           result = result * 10;
         }
         if ((px > 165) && (px < (165 + 70)) && (py > 265) && (py < (265 + 50))) {  //enter
-          tft.fillScreen(ILI9341_BLACK);
+          tft.fillScreen(background_colour);
           return result;
         }
 
 
         if (last_result != result) {
-          tft.fillRect(0, 0, 240, 50, ILI9341_BLACK);
+          tft.fillRect(0, 0, 240, 50, background_colour);
           tft.setCursor(115, 20);
           tft.setTextSize(3);
           tft.println(result);
@@ -166,16 +173,24 @@ public:
   }
 
   void brightnessControl(void) {
-    tft.fillScreen(ILI9341_BLACK);
-    tft.drawFastHLine(20, 280, 200, ILI9341_RED);
-    tft.drawFastVLine(20, 265, 30, ILI9341_RED);
-    tft.drawFastVLine(220, 265, 30, ILI9341_RED);
+    tft.fillScreen(background_colour);
+    tft.drawFastHLine(20, 280, 200, foreground_colour);
+    tft.drawFastVLine(20, 265, 30, foreground_colour);
+    tft.drawFastVLine(220, 265, 30, foreground_colour);
+    tft.drawRect(5, 5, 230, 100, foreground_colour);
 
-    tft.drawRect(5, 5, 230, 150, ILI9341_RED);
-    //tft.fillRect(10, 70, 220, 80, ILI9341_RED);
+    tft.drawRect(5, 110, 230, 100, foreground_colour);
+
+    //tft.fillRect(10, 70, 220, 80, foreground_colour);
     tft.setCursor(35, 35);
     tft.setTextSize(2);
     tft.println("Set brightness");
+
+    tft.setCursor(25, 145);
+    tft.setTextSize(2);
+    tft.println("Inverted Colors");
+
+    int last_px = 0;
 
     while (1) {
       if (ts.touched()) {
@@ -187,25 +202,47 @@ public:
         int px = map(p.x, TS_MINY, TS_MAXY, 0, tft.width());
         int py = map(p.y, TS_MINX, TS_MAXX, 0, tft.height());
 
-        if ((px > 5) && (px < (5 + 230)) && (py > 5) && (py < (5 + 150))) {
-          tft.fillScreen(ILI9341_BLACK);
+        if ((px > 5) && (px < (5 + 230)) && (py > 5) && (py < (5 + 100))) {  // Check if Enter is pressed
+          tft.fillScreen(background_colour);
+          delay(400);
+          break;
+        }
+
+        if ((px > 5) && (px < (5 + 230)) && (py > 110) && (py < (110 + 100))) {  // Check if Enter is pressed
+          if (background_colour == 0x0000) {
+            background_colour = 0xF800;  ///<   0,   0,   0
+            foreground_colour = 0x0000;  ///< 255,   0,   0
+          } else {
+            background_colour = 0x0000;  ///<   0,   0,   0
+            foreground_colour = 0xF800;  ///< 255,   0,   0
+          }
+          tft.fillScreen(background_colour);
           delay(400);
           break;
         }
 
         if (px > 0 && (px < (240)) && (py > 240) && (py < 315)) {
+
           if (px < 20)
             px = 20;
           if (px > 220)
             px = 220;
+
+          tft.fillCircle(last_px, 280, 12, background_colour);
+          tft.fillCircle(px, 280, 12, foreground_colour);
+          tft.drawFastHLine(20, 280, 200, foreground_colour);
+          tft.drawFastVLine(20, 265, 30, foreground_colour);
+          tft.drawFastVLine(220, 265, 30, foreground_colour);
+          last_px = px;
+
           if (px <= 140)
             brightness = map(px, 20, 140, 1, 15);
           else
             brightness = map(px, 140, 220, 16, 255);
           analogWrite(backlight, brightness);  // Set brightness
 
-          tft.fillRect(10, 70, 220, 80, ILI9341_BLACK);
-          tft.setCursor(110, 80);
+          tft.fillRect(10, 70, 220, 20, background_colour);
+          tft.setCursor(110, 75);
           tft.setTextSize(2);
           tft.println(brightness);
           // tft.setCursor(110, 100);
@@ -228,11 +265,13 @@ public:
 
 
 void setup(void) {
-  tft.begin();
-  ts.begin();
 
   pinMode(backlight, OUTPUT);  // sets the pin as output
-  tft.fillScreen(ILI9341_BLACK);
+  pinMode(relais_pin, OUTPUT);
+  digitalWrite(relais_pin, 0);
+  tft.begin();
+  ts.begin();
+  tft.fillScreen(background_colour);
   // origin = left,top landscape (USB left upper)
   // tft.setRotation(0);
 }
@@ -310,59 +349,59 @@ void loop() {
         Darkmode.drawSun();
         if (relais_on) {
           OnOff.drawButton("Off");
-          tft.fillRect(5, 280, 230, 35, ILI9341_RED);
+          tft.fillRect(5, 280, 230, 35, foreground_colour);
         } else {
           OnOff.drawButton("On");
         }
 
         if (start_0) {
           Start0.drawButton("Stop");
-          tft.fillRect(5, 280, 230, 35, ILI9341_RED);
+          tft.fillRect(5, 280, 230, 35, foreground_colour);
         } else {
           Start0.drawButton("Start");
         }
         if (start_1) {
           Start1.drawButton("Stop");
-          tft.fillRect(5, 280, 230, 35, ILI9341_RED);
+          tft.fillRect(5, 280, 230, 35, foreground_colour);
         } else {
           Start1.drawButton("Start");
         }
         if (start_2) {
           Start2.drawButton("Stop");
-          tft.fillRect(5, 280, 230, 35, ILI9341_RED);
+          tft.fillRect(5, 280, 230, 35, foreground_colour);
         } else {
           Start2.drawButton("Start");
         }
       }
     }
 
-    if (start_0 || start_1 || start_2 || relais_on) {
+    if (start_0 || start_1 || start_2 || relais_on) {  // turn relais on
 
-
+      digitalWrite(relais_pin, 1);
       if (start_0)
         time_counter = time_0;
       if (start_1)
         time_counter = time_1;
       if (start_2)
         time_counter = time_2;
-      
+
       if (!relais_on) {
 
         int width = map((millis() - start_time) / 1000, 0, time_counter, 0, 230);
 
-        tft.fillRect(235 - width, 280, width, 35, ILI9341_BLACK);
+        tft.fillRect(235 - width, 280, width, 35, background_colour);
 
-        if (millis() - lastMillis >= 1000) {	
-            lastMillis = millis() ; 
+        if (millis() - lastMillis >= 1000) {
+          lastMillis = millis();
           if (start_0)
-            Time0.drawButton((millis() - start_time) / 1000);
+            Time0.drawButton(time_0 - (millis() - start_time) / 1000);
           if (start_1)
-            Time1.drawButton((millis() - start_time) / 1000);
+            Time1.drawButton(time_1 - (millis() - start_time) / 1000);
           if (start_2)
-            Time2.drawButton((millis() - start_time) / 1000);
+            Time2.drawButton(time_2 - (millis() - start_time) / 1000);
         }
 
-        if (time_counter <= (millis() - start_time) / 1000) {
+        if (time_counter <= (millis() - start_time) / 1000) {  // timer
           start_0 = 0;
           start_1 = 0;
           start_2 = 0;
@@ -371,8 +410,9 @@ void loop() {
         }
       }
     }
-    if (!start_0 && !start_1 && !start_2 && !relais_on) {  //clear bar
-      tft.fillRect(5, 280, 230, 35, ILI9341_BLACK);
+    if (!start_0 && !start_1 && !start_2 && !relais_on) {  // clear bar / turn relais off
+      tft.fillRect(5, 280, 230, 35, background_colour);
+      digitalWrite(relais_pin, 0);
     }
   }
 }
