@@ -30,7 +30,7 @@ bool relais_on = 0;
 bool dark_on = 0;
 
 
-int relais_pin = 13;
+int relais_pin = 7;
 
 bool start_0 = 0;
 bool start_1 = 0;
@@ -268,7 +268,7 @@ void setup(void) {
 
   pinMode(backlight, OUTPUT);  // sets the pin as output
   pinMode(relais_pin, OUTPUT);
-  digitalWrite(relais_pin, 0);
+  digitalWrite(relais_pin, 1);
   tft.begin();
   ts.begin();
   tft.fillScreen(background_colour);
@@ -377,7 +377,7 @@ void loop() {
 
     if (start_0 || start_1 || start_2 || relais_on) {  // turn relais on
 
-      digitalWrite(relais_pin, 1);
+      digitalWrite(relais_pin, 0);
       if (start_0)
         time_counter = time_0;
       if (start_1)
@@ -412,7 +412,7 @@ void loop() {
     }
     if (!start_0 && !start_1 && !start_2 && !relais_on) {  // clear bar / turn relais off
       tft.fillRect(5, 280, 230, 35, background_colour);
-      digitalWrite(relais_pin, 0);
+      digitalWrite(relais_pin, 1);
     }
   }
 }
